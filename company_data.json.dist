@@ -1,0 +1,33 @@
+{
+    "name": "company name",
+    "base_url": "company_url_with_appropriate_page_nr",
+    "pagination": {     // optional
+        "increment":1,     // optional
+        "start":1     // optional
+    },
+    "load_more": {     // optional
+        "button_name":"Load more"     // optional
+    },     // optional
+    "job_container":{
+        "tag": "tag name",
+        "attrs": {
+            "key": "key name",
+            "value": "appropriate value"
+        },
+        "title_tag": {
+            "tag": "tag name",
+            "attrs": {     // optional
+                "key": "key name",     // optional
+                "value": "appropriate value"     // optional
+            }
+        },
+        "id_tag": {     // optional
+            "tag": " tag name",     // optional
+            "attrs": {     // optional
+                "key": "key name",     // optional
+                "value": "appropriate value"     // optional
+            },     // optional
+            "attr_location":"attribute with the id value"     // optional
+        }
+    }
+}
