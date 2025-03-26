@@ -1,10 +1,13 @@
 {
     "name": "company name",
     "base_url": "company_url_with_appropriate_page_nr",
-    "pagination": {     // optional
-        "increment":1,     // optional
-        "start":1     // optional
-    },
+    "next_page": {     // optional
+        "tag":"tag name",     // optional
+        "attrs":{     // optional
+            "key": "key name",     // optional
+            "value": "appropriate value"     // optional
+        }     // optional
+    },     // optional
     "load_more": {     // optional
         "button_name":"Load more"     // optional
     },     // optional
@@ -22,12 +25,54 @@
             }
         },
         "id_tag": {     // optional
-            "tag": " tag name",     // optional
+            "tag": "tag name",     // optional
             "attrs": {     // optional
                 "key": "key name",     // optional
                 "value": "appropriate value"     // optional
             },     // optional
             "attr_location":"attribute with the id value"     // optional
+        }
+    }
+}
+
+
+{
+    "name": "company_name",
+    "base_url": "company_url_with_appropriate_page_nr",
+    "next_page": {
+        "tag":"tag_name",
+        "attrs":{
+            "key": "key_name",
+            "value": "appropriate_value"
+        }
+    },
+    "load_more": {
+        "tag":"tag_name",
+        "attrs":{
+            "key": "key_name",
+            "value": "appropriate_value"
+        }
+    },
+    "job_container":{
+        "tag": "tag_name",
+        "attrs": {
+            "key": "key_name",
+            "value": "appropriate_value"
+        },
+        "title_tag": {
+            "tag": "tag_name",
+            "attrs": {
+                "key": "key_name",
+                "value": "appropriate_value"
+            }
+        },
+        "id_tag": {
+            "tag": "tag_name",
+            "attrs": {
+                "key": "key_name",
+                "value": "appropriate_value"
+            },
+            "attr_location":"attribute_with_the_id_value"
         }
     }
 }
