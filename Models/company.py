@@ -14,6 +14,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from urllib3.exceptions import MaxRetryError
 
+from utils import find_multiple_tags, find_single_tag
 
 options = Options()
 options.add_argument("--headless")  # Run Chrome in headless mode
@@ -51,14 +52,14 @@ class Company:
 
         match self.results_loading:
             case ResultsLoading.PAGINATION:
-                self.pagination_dict = company_dict["pagination"]
+                self.next_page_dict = company_dict["next_page"]
             case ResultsLoading.SAME_PAGE_LOADING:
                 self.more_button_dict = company_dict["load_more"]
 
     def get_results_loading_type(self, company_dict):
         """Assess which kind of results loading this website has"""
 
-        if "pagination" in company_dict:
+        if "next_page" in company_dict:
             return ResultsLoading.PAGINATION
         elif "load_more" in company_dict:
             return ResultsLoading.SAME_PAGE_LOADING
@@ -93,36 +94,45 @@ class Company:
     def fetch_results_of_pagination(self):
         """Iterate over pages to get all results"""
 
-        job_containers = []
+        driver = webdriver.Chrome(options=options)
 
-        page_nr = self.pagination_dict["start"]
-        page_increment = self.pagination_dict["increment"]
+        driver.get(self.url)
+
+        job_containers = []
+        old_nr_results = 0
 
         while True:
-
-            driver = webdriver.Chrome(options=options)
-
-            new_url = self.url.format(page_nr=page_nr)
-
-            try:
-                driver.get(new_url)
-            except MaxRetryError:
-                break
-
             time.sleep(PAGE_LOADING_TIME)
 
             page_soup = BeautifulSoup(driver.page_source, features="html.parser")
-
             new_containers = self.extract_results_of_single_page_soup(page_soup)
-
-            driver.quit()
 
             if len(new_containers) == 0:
                 break
 
             job_containers.extend(new_containers)
 
-            page_nr += page_increment
+            job_containers = self.get_unique_results(job_containers)
+
+            new_nr_results = len(job_containers)
+
+            if new_nr_results == old_nr_results:
+                break
+
+            old_nr_results = new_nr_results
+
+            try:
+                button = driver.find_element(
+                    By.XPATH,
+                    f"//{self.next_page_dict["tag"]}[@{self.next_page_dict["attrs"]["key"]}='{self.next_page_dict["attrs"]["value"]}']",
+                )
+
+                driver.execute_script("arguments[0].click();", button)
+
+            except NoSuchElementException:
+                break
+
+        driver.quit()
 
         return job_containers
 
@@ -139,13 +149,14 @@ class Company:
         while True:
             soup = BeautifulSoup(driver.page_source, features="html.parser")
 
-            results = soup.find_all(
+            results = find_multiple_tags(
+                soup,
                 self.job_container_metadata.main_tag,
-                {
-                    self.job_container_metadata.main_tag_attrs[
-                        "key"
-                    ]: self.job_container_metadata.main_tag_attrs["value"]
-                },
+                self.job_container_metadata.main_tag_attrs,
+                [
+                    self.job_container_metadata.title_tag,
+                    self.job_container_metadata.id_tag,
+                ],
             )
 
             new_nr_results = len(results)
@@ -179,13 +190,12 @@ class Company:
 
     def extract_results_of_single_page_soup(self, full_page_soup):
         """Extract the job containers from a soup object"""
-        job_container_soups = full_page_soup.find_all(
+
+        job_container_soups = find_multiple_tags(
+            full_page_soup,
             self.job_container_metadata.main_tag,
-            {
-                self.job_container_metadata.main_tag_attrs[
-                    "key"
-                ]: self.job_container_metadata.main_tag_attrs["value"]
-            },
+            self.job_container_metadata.main_tag_attrs,
+            [self.job_container_metadata.title_tag, self.job_container_metadata.id_tag],
         )
 
         job_containers = [
@@ -200,7 +210,7 @@ class Company:
 
         job_containers_dict = {job.id: job for job in job_containers}
 
-        return job_containers_dict.values()
+        return list(job_containers_dict.values())
 
 
 class JobContainerMetadata:
@@ -210,7 +220,7 @@ class JobContainerMetadata:
 
     def __init__(self, info_dict):
         self.main_tag = info_dict["tag"]
-        self.main_tag_attrs = info_dict["attrs"]
+        self.main_tag_attrs = None if "attrs" not in info_dict else info_dict["attrs"]
 
         self.title_tag = info_dict["title_tag"]["tag"]
         self.title_tag_attrs = (
@@ -251,17 +261,9 @@ class JobContainer:
         Output: processed string with job title
         """
 
-        if self.metadata.title_tag_attrs is not None:
-            title_soup = soup.find(
-                self.metadata.title_tag,
-                {
-                    self.metadata.title_tag_attrs["key"]: self.metadata.title_tag_attrs[
-                        "value"
-                    ]
-                },
-            )
-        else:
-            title_soup = soup.find(self.metadata.title_tag)
+        title_soup = find_single_tag(
+            soup, self.metadata.title_tag, self.metadata.title_tag_attrs
+        )
 
         title_raw_string = title_soup.text
         title_processed_string = " ".join(
@@ -278,17 +280,9 @@ class JobContainer:
         """
 
         if self.metadata.id_tag:
-            if self.metadata.id_tag_attrs:
-                id_soup = soup.find(
-                    self.metadata.id_tag,
-                    {
-                        self.metadata.id_tag_attrs["key"]: self.metadata.id_tag_attrs[
-                            "value"
-                        ]
-                    },
-                )
-            else:
-                id_soup = soup.find(self.metadata.id_tag)
+            id_soup = find_single_tag(
+                soup, self.metadata.id_tag, self.metadata.id_tag_attrs
+            )
 
             id_string = id_soup.attrs[self.metadata.id_tag_attr_location].strip()
             return id_string
