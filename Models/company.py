@@ -93,14 +93,14 @@ class Company:
     def fetch_results_of_pagination(self):
         """Iterate over pages to get all results"""
 
-        driver = webdriver.Chrome(options=options)
-
         job_containers = []
 
         page_nr = self.pagination_dict["start"]
         page_increment = self.pagination_dict["increment"]
 
         while True:
+
+            driver = webdriver.Chrome(options=options)
 
             new_url = self.url.format(page_nr=page_nr)
 
