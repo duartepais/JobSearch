@@ -46,12 +46,27 @@
             "value": "appropriate_value"
         }
     },
+    or
+    "next_page": {
+        "tag":"tag_name",
+        "attrs":{
+            "key": "key_name",
+            "incomplete_value": "appropriate_value{page_nr}"
+        },
+        "start_point": 1,
+        "increment": 1
+    },
     "load_more": {
         "tag":"tag_name",
         "attrs":{
             "key": "key_name",
             "value": "appropriate_value"
         }
+    },
+    or
+    "load_more": {
+        "tag":"tag_name",
+        "button_name": "button_label"
     },
     "job_container":{
         "tag": "tag_name",

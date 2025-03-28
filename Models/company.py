@@ -53,6 +53,8 @@ class Company:
         match self.results_loading:
             case ResultsLoading.PAGINATION:
                 self.next_page_dict = company_dict["next_page"]
+                if "start_point" in self.next_page_dict:
+                    self.current_stage = self.next_page_dict["start_point"]
             case ResultsLoading.SAME_PAGE_LOADING:
                 self.more_button_dict = company_dict["load_more"]
 
@@ -122,10 +124,9 @@ class Company:
             old_nr_results = new_nr_results
 
             try:
-                button = driver.find_element(
-                    By.XPATH,
-                    f"//{self.next_page_dict["tag"]}[@{self.next_page_dict["attrs"]["key"]}='{self.next_page_dict["attrs"]["value"]}']",
-                )
+                search_statement = self.get_button_search_statement()
+
+                button = driver.find_element(By.XPATH, search_statement)
 
                 driver.execute_script("arguments[0].click();", button)
 
@@ -217,6 +218,21 @@ class Company:
 
         return list(job_containers_dict.values())
 
+    def get_button_search_statement(self):
+        """Create the statement to search for, when scanning through pagination"""
+
+        if "start_point" in self.next_page_dict:
+            self.current_stage += self.next_page_dict["increment"]
+            attr_value = self.next_page_dict["attrs"]["incomplete_value"].format(
+                page_nr=self.current_stage
+            )
+            statement = f"//{self.next_page_dict["tag"]}[@{self.next_page_dict["attrs"]["key"]}='{attr_value}']"
+
+        else:
+            statement = f"//{self.next_page_dict["tag"]}[@{self.next_page_dict["attrs"]["key"]}='{self.next_page_dict["attrs"]["value"]}']"
+
+        return statement
+
 
 class JobContainerMetadata:
     """
@@ -227,12 +243,15 @@ class JobContainerMetadata:
         self.main_tag = info_dict["tag"]
         self.main_tag_attrs = None if "attrs" not in info_dict else info_dict["attrs"]
 
-        self.title_tag = info_dict["title_tag"]["tag"]
-        self.title_tag_attrs = (
-            None
-            if "attrs" not in info_dict["title_tag"]
-            else info_dict["title_tag"]["attrs"]
-        )
+        if "title_tag" not in info_dict:
+            self.title_tag, self.title_tag_attrs = None, None
+        else:
+            self.title_tag = info_dict["title_tag"]["tag"]
+            self.title_tag_attrs = (
+                None
+                if "attrs" not in info_dict["title_tag"]
+                else info_dict["title_tag"]["attrs"]
+            )
 
         if "id_tag" not in info_dict:
             self.id_tag, self.id_tag_attrs, self.id_tag_attr_location = None, None, None
@@ -265,6 +284,9 @@ class JobContainer:
         Input: container soup object
         Output: processed string with job title
         """
+
+        if self.metadata.title_tag is None:
+            return soup.text
 
         title_soup = find_single_tag(
             soup, self.metadata.title_tag, self.metadata.title_tag_attrs
