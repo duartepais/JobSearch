@@ -2,8 +2,6 @@
 Collection of functions that help the main file and do not fit the model category
 """
 
-from bs4 import BeautifulSoup
-
 
 def find_multiple_tags(soup, tag_name, tag_attrs, children_tag_names_list):
     """find the all tags given the different attribute possibilities"""
