@@ -12,7 +12,8 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from urllib3.exceptions import MaxRetryError
+
+# from urllib3.exceptions import MaxRetryError
 
 from utils import find_multiple_tags, find_single_tag
 
@@ -48,7 +49,7 @@ class Company:
             company_dict["job_container"]
         )
 
-        self.error = None
+        self.errors = []
 
         match self.results_loading:
             case ResultsLoading.PAGINATION:
@@ -189,7 +190,7 @@ class Company:
             # write any exception unnaccounted for in the log file
             except Exception:
                 # TODO write exception in log
-                self.error = traceback.format_exc()
+                self.errors.append(traceback.format_exc())
                 break
 
         return soup
@@ -204,10 +205,16 @@ class Company:
             [self.job_container_metadata.title_tag, self.job_container_metadata.id_tag],
         )
 
-        job_containers = [
-            JobContainer(self.job_container_metadata, job_soup)
-            for job_soup in job_container_soups
-        ]
+        job_containers = []
+        for job_soup in job_container_soups:
+            try:
+                job_containers.append(
+                    JobContainer(self.job_container_metadata, job_soup)
+                )
+            except (ValueError, AttributeError):
+                continue
+            except Exception:
+                self.errors.append(traceback.format_exc())
 
         return job_containers
 
@@ -286,16 +293,22 @@ class JobContainer:
         """
 
         if self.metadata.title_tag is None:
-            return soup.text
+            title_raw_string = soup.text
+        else:
+            title_soup = find_single_tag(
+                soup, self.metadata.title_tag, self.metadata.title_tag_attrs
+            )
 
-        title_soup = find_single_tag(
-            soup, self.metadata.title_tag, self.metadata.title_tag_attrs
-        )
+            title_raw_string = title_soup.text
 
-        title_raw_string = title_soup.text
         title_processed_string = " ".join(
             title_raw_string.replace("\xa0", " ").splitlines()
         ).strip()
+
+        if not title_processed_string:
+            raise ValueError(
+                "This soup object has an empty text content for the title attribute"
+            )
 
         return title_processed_string
 
@@ -312,6 +325,12 @@ class JobContainer:
             )
 
             id_string = id_soup.attrs[self.metadata.id_tag_attr_location].strip()
-            return id_string
+        else:
+            id_string = self.title.strip()
 
-        return self.title
+        if not id_string:
+            raise ValueError(
+                "This soup object has an empty text content for the id attribute"
+            )
+
+        return id_string
