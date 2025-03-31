@@ -1,5 +1,5 @@
 """
-Data models for comapnies' websites and job listings
+Data models for companies' websites and job listings
 """
 
 import time
@@ -48,7 +48,7 @@ class Company:
         self.job_container_metadata = JobContainerMetadata(
             company_dict["job_container"]
         )
-
+        self.results_dict = {}
         self.errors = []
 
         match self.results_loading:
@@ -90,9 +90,12 @@ class Company:
                 soup = BeautifulSoup(driver.page_source, features="html.parser")
                 job_containers = self.extract_results_of_single_page_soup(soup)
 
-        unique_results = self.get_unique_results(job_containers)
+        self.results_dict = self.get_results_dict(job_containers)
 
-        return unique_results
+        if len(self.results_dict) == 0:
+            self.errors.append(
+                "Zero results were retrieved. Check this company's website"
+            )
 
     def fetch_results_of_pagination(self):
         """Iterate over pages to get all results"""
@@ -115,9 +118,7 @@ class Company:
 
             job_containers.extend(new_containers)
 
-            job_containers = self.get_unique_results(job_containers)
-
-            new_nr_results = len(job_containers)
+            new_nr_results = len(self.get_results_dict(job_containers))
 
             if new_nr_results == old_nr_results:
                 break
@@ -189,7 +190,6 @@ class Company:
 
             # write any exception unnaccounted for in the log file
             except Exception:
-                # TODO write exception in log
                 self.errors.append(traceback.format_exc())
                 break
 
@@ -218,12 +218,12 @@ class Company:
 
         return job_containers
 
-    def get_unique_results(self, job_containers):
+    def get_results_dict(self, job_containers):
         """Select unique jobs from the fetched results"""
 
-        job_containers_dict = {job.id: job for job in job_containers}
+        job_containers_dict = {job.id: job.title for job in job_containers}
 
-        return list(job_containers_dict.values())
+        return job_containers_dict
 
     def get_button_search_statement(self):
         """Create the statement to search for, when scanning through pagination"""
@@ -263,7 +263,10 @@ class JobContainerMetadata:
         if "id_tag" not in info_dict:
             self.id_tag, self.id_tag_attrs, self.id_tag_attr_location = None, None, None
         else:
-            self.id_tag = info_dict["id_tag"]["tag"]
+
+            self.id_tag = (
+                None if "tag" not in info_dict["id_tag"] else info_dict["id_tag"]["tag"]
+            )
 
             self.id_tag_attrs = (
                 None
@@ -319,12 +322,16 @@ class JobContainer:
         Output: if available, job id, else, job title
         """
 
-        if self.metadata.id_tag:
+        if self.metadata.id_tag and self.metadata.id_tag_attrs:
             id_soup = find_single_tag(
                 soup, self.metadata.id_tag, self.metadata.id_tag_attrs
             )
 
             id_string = id_soup.attrs[self.metadata.id_tag_attr_location].strip()
+
+        elif self.metadata.id_tag_attr_location and not self.metadata.id_tag:
+            id_string = soup.attrs[self.metadata.id_tag_attr_location].strip()
+
         else:
             id_string = self.title.strip()
 
@@ -334,3 +341,10 @@ class JobContainer:
             )
 
         return id_string
+
+    def to_dict(self):
+        """
+        Get a representable dict of the job
+        """
+
+        return {self.id: self.title}
