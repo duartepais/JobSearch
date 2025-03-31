@@ -11,11 +11,16 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 
-# from urllib3.exceptions import MaxRetryError
+from dotenv import dotenv_values
 
 from utils import find_multiple_tags, find_single_tag
+
+config = dotenv_values(".env")
+
+service = Service(config["CHROMEDRIVER_PATH"])
 
 options = Options()
 options.add_argument("--headless")  # Run Chrome in headless mode
@@ -83,7 +88,7 @@ class Company:
                 )
 
             case ResultsLoading.SAME_PAGE_ENDLESS:
-                driver = webdriver.Chrome(options=options)
+                driver = webdriver.Chrome(service=service, options=options)
                 driver.get(self.url)
                 time.sleep(PAGE_LOADING_TIME)
 
@@ -100,7 +105,7 @@ class Company:
     def fetch_results_of_pagination(self):
         """Iterate over pages to get all results"""
 
-        driver = webdriver.Chrome(options=options)
+        driver = webdriver.Chrome(service=service, options=options)
 
         driver.get(self.url)
 
@@ -142,7 +147,7 @@ class Company:
     def fetch_soup_of_incremental_page(self):
         """Expand the page until no new content is shown"""
 
-        driver = webdriver.Chrome(options=options)
+        driver = webdriver.Chrome(service=service, options=options)
 
         driver.get(self.url)
         time.sleep(PAGE_LOADING_TIME)
