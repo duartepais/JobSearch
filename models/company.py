@@ -13,6 +13,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
+from urllib3.exceptions import ReadTimeoutError
 
 from dotenv import dotenv_values
 
@@ -83,17 +84,28 @@ class Company:
 
             case ResultsLoading.SAME_PAGE_LOADING:
                 full_page_soup = self.fetch_soup_of_incremental_page()
-                job_containers = self.extract_results_of_single_page_soup(
-                    full_page_soup
-                )
+                if full_page_soup:
+                    job_containers = self.extract_results_of_single_page_soup(
+                        full_page_soup
+                    )
+                else:
+                    self.errors.append("Error while fetching data from URL")
+                    job_containers = []
 
             case ResultsLoading.SAME_PAGE_ENDLESS:
                 driver = webdriver.Chrome(service=service, options=options)
-                driver.get(self.url)
-                time.sleep(PAGE_LOADING_TIME)
 
-                soup = BeautifulSoup(driver.page_source, features="html.parser")
-                job_containers = self.extract_results_of_single_page_soup(soup)
+                try:
+                    driver.get(self.url)
+                    time.sleep(PAGE_LOADING_TIME)
+                    soup = BeautifulSoup(driver.page_source, features="html.parser")
+                    job_containers = self.extract_results_of_single_page_soup(soup)
+                    driver.quit()
+
+                except ReadTimeoutError:
+                    self.errors.append("Error while fetching data from URL")
+                    driver.quit()
+                    job_containers = []
 
         self.results_dict = self.get_results_dict(job_containers)
 
@@ -107,13 +119,19 @@ class Company:
 
         driver = webdriver.Chrome(service=service, options=options)
 
-        driver.get(self.url)
-
         job_containers = []
         old_nr_results = 0
 
-        while True:
+        try:
+            driver.get(self.url)
             time.sleep(PAGE_LOADING_TIME)
+        except ReadTimeoutError:
+            self.errors.append("Error while fetching data from URL")
+            driver.quit()
+
+            return job_containers
+
+        while True:
 
             page_soup = BeautifulSoup(driver.page_source, features="html.parser")
             new_containers = self.extract_results_of_single_page_soup(page_soup)
@@ -148,9 +166,14 @@ class Company:
         """Expand the page until no new content is shown"""
 
         driver = webdriver.Chrome(service=service, options=options)
+        try:
+            driver.get(self.url)
+            time.sleep(PAGE_LOADING_TIME)
+        except ReadTimeoutError:
+            self.errors.append("Error while fetching data from URL")
+            driver.quit()
 
-        driver.get(self.url)
-        time.sleep(PAGE_LOADING_TIME)
+            return None
 
         old_nr_results = 0
 
@@ -197,6 +220,8 @@ class Company:
             except Exception:
                 self.errors.append(traceback.format_exc())
                 break
+
+        driver.quit()
 
         return soup
 

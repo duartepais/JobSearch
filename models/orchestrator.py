@@ -110,7 +110,16 @@ class Orchestrator:
         """
         update today dict and file with today's job results
         """
-        self.today_dict[company_name]["job_listings"] = jobs_dict
+        if len(jobs_dict) > 0:
+            self.today_dict[company_name]["job_listings"] = jobs_dict
+        else:
+            if company_name in self.yesterday_dict:
+
+                self.today_dict[company_name]["job_listings"] = self.yesterday_dict[
+                    company_name
+                ]["job_listings"]
+            else:
+                self.today_dict[company_name]["job_listings"] = jobs_dict
 
         if len(error_list) > 0:
             self.today_dict[company_name]["errors"] = error_list
