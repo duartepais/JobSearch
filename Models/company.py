@@ -322,14 +322,14 @@ class JobContainer:
         Output: if available, job id, else, job title
         """
 
-        if self.metadata.id_tag and self.metadata.id_tag_attrs:
+        if self.metadata.id_tag:
             id_soup = find_single_tag(
                 soup, self.metadata.id_tag, self.metadata.id_tag_attrs
             )
 
             id_string = id_soup.attrs[self.metadata.id_tag_attr_location].strip()
 
-        elif self.metadata.id_tag_attr_location and not self.metadata.id_tag:
+        elif self.metadata.id_tag_attr_location:
             id_string = soup.attrs[self.metadata.id_tag_attr_location].strip()
 
         else:
