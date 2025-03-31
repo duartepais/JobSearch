@@ -89,5 +89,3 @@ def send_email(email_html, email_date):
         },
         timeout=10,
     )
-
-    print(result)
