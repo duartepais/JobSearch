@@ -172,10 +172,10 @@ class Company:
             # try if the button can be clicked
 
             if "attrs" not in self.more_button_dict:
-                cmd_str = f"//button[contains (text(),'{self.more_button_dict["button_name"]}')]"
+                cmd_str = f"//button[contains (text(),'{self.more_button_dict['button_name']}')]"
 
             else:
-                cmd_str = f"//{self.more_button_dict["tag"]}[@{self.more_button_dict["attrs"]["key"]}='{self.more_button_dict["attrs"]["value"]}']"
+                cmd_str = f"//{self.more_button_dict['tag']}[@{self.more_button_dict['attrs']['key']}='{self.more_button_dict['attrs']['value']}']"
 
             try:
 
@@ -233,10 +233,10 @@ class Company:
             attr_value = self.next_page_dict["attrs"]["incomplete_value"].format(
                 page_nr=self.current_stage
             )
-            statement = f"//{self.next_page_dict["tag"]}[@{self.next_page_dict["attrs"]["key"]}='{attr_value}']"
+            statement = f"//{self.next_page_dict['tag']}[@{self.next_page_dict['attrs']['key']}='{attr_value}']"
 
         else:
-            statement = f"//{self.next_page_dict["tag"]}[@{self.next_page_dict["attrs"]["key"]}='{self.next_page_dict["attrs"]["value"]}']"
+            statement = f"//{self.next_page_dict['tag']}[@{self.next_page_dict['attrs']['key']}='{self.next_page_dict['attrs']['value']}']"
 
         return statement
 

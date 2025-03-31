@@ -79,11 +79,11 @@ def send_email(email_html, email_date):
     Send an email with some date on the subject and some html
     """
     result = requests.post(
-        f"https://api.mailgun.net/v3/{config["EMAIL_DOMAIN"]}/messages",
+        f"https://api.mailgun.net/v3/{config['EMAIL_DOMAIN']}/messages",
         auth=("api", config["API_KEY"]),
         data={
-            "from": f"Mailgun Sandbox <mailgun@{config["EMAIL_DOMAIN"]}>",
-            "to": f"<{config["EMAIL_ADDRESS"]}>",
+            "from": f"Mailgun Sandbox <mailgun@{config['EMAIL_DOMAIN']}>",
+            "to": f"<{config['EMAIL_ADDRESS']}>",
             "subject": f"New jobs - {email_date}",
             "html": email_html,
         },
