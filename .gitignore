@@ -179,3 +179,4 @@ cython_debug/
 # Test
 playground*
 *.json
+.DS_Store
