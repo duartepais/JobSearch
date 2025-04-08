@@ -1,8 +1,12 @@
+"""
+Classes for browser interactions
+"""
+
 import asyncio
 
-import nodriver as uc
-
 from abc import ABC, abstractmethod
+
+import nodriver as uc
 
 
 PAGE_LOADING_TIME = 7  # in seconds
@@ -15,15 +19,12 @@ class BrowserInteraction(ABC):
     def __init__(self, url: str):
         self.url = url
         self.starting_attempts = 1
+        self.driver = None
 
     def run(self):
         """Run the fetching of the html content"""
 
         uc.loop().run_until_complete(self.fetch_html())
-
-    @abstractmethod
-    async def fetch_html(self):
-        pass
 
     async def start_driver(self):
         """Repeatedly attempt to start browser's driver"""
@@ -35,6 +36,10 @@ class BrowserInteraction(ABC):
                 self.starting_attempts += 1
                 if self.starting_attempts >= STARTING_ATTEMPTS_LIMIT:
                     raise Exception("Problem while starting the browser")
+
+    @abstractmethod
+    async def fetch_html(self):
+        """mandatory class method"""
 
 
 class LoadMoreInteraction(BrowserInteraction):
@@ -193,7 +198,7 @@ class PaginationInteraction(BrowserInteraction):
 class SimplePageInteraction(BrowserInteraction):
     """Interaction where results are already all on the same page"""
 
-    def __init__(self, url):
+    def __init__(self, url: str):
         super().__init__(url)
         self.html = None
 

@@ -1,5 +1,5 @@
 """
-Data model for the orchestrator
+Class for the orchestrator
 """
 
 import json
@@ -23,7 +23,7 @@ class Orchestrator:
     Abstraction for the scraping orchestrator
     """
 
-    def __init__(self, company_list):
+    def __init__(self, company_list: list):
         self.company_list = company_list
         self.today = date.today().strftime("%Y-%m-%d")
 
@@ -106,7 +106,7 @@ class Orchestrator:
         if os.path.exists(config["TODAY_FILENAME"]):
             os.remove(config["TODAY_FILENAME"])
 
-    def update_today_data(self, company_name, jobs_dict, error_list):
+    def update_today_data(self, company_name: str, jobs_dict: dict, error_list: list):
         """
         update today dict and file with today's job results
         """
@@ -129,7 +129,7 @@ class Orchestrator:
                 self.today_dict, write_file, indent=1, default=lambda o: o.to_dict()
             )
 
-    def update_history_data(self, company_name, jobs_dict):
+    def update_history_data(self, company_name: str, jobs_dict: dict):
         """
         update history dict and file with newest jobs
         """
@@ -144,7 +144,7 @@ class Orchestrator:
                 self.history_dict, write_file, indent=1, default=lambda o: o.to_dict()
             )
 
-    def email_new_results(self, results_dict, errors_dict):
+    def email_new_results(self, results_dict: dict, errors_dict: dict):
         """
         create the email template and send it by email
         """

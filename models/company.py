@@ -1,13 +1,13 @@
 """
-Data models for companies' websites and job listings
+Classes for companies' websites and job listings
 """
 
-import time
 import traceback
 
 from enum import auto, Enum
 
 from bs4 import BeautifulSoup
+from bs4.element import Tag
 
 from dotenv import dotenv_values
 
@@ -36,7 +36,7 @@ class Company:
     Abstraction for the company website and its scraping
     """
 
-    def __init__(self, company_dict):
+    def __init__(self, company_dict: dict):
         self.name = company_dict["name"]
         self.url = company_dict["base_url"]
         self.results_loading = self.get_results_loading_type(company_dict)
@@ -46,7 +46,7 @@ class Company:
         self.jobs_dict = {}
         self.errors = []
 
-    def get_results_loading_type(self, company_dict):
+    def get_results_loading_type(self, company_dict: dict):
         """Assess which kind of results loading this website has"""
 
         if "next_page" in company_dict:
@@ -91,7 +91,9 @@ class Company:
                     f"No results were retrieved; check the website of {self.name}"
                 )
 
-    def extract_jobs_from_html(self, html):
+    def extract_jobs_from_html(self, html: str):
+        """Get the appropriate job info from the raw html"""
+
         page_soup = BeautifulSoup(html, features="html.parser")
 
         job_container_soups = find_multiple_tags(
@@ -121,7 +123,7 @@ class JobContainerMetadata:
     Abstraction containing the important html tags associated with a job container
     """
 
-    def __init__(self, info_dict):
+    def __init__(self, info_dict: dict):
         self.main_tag = info_dict["tag"]
         self.main_tag_attrs = None if "attrs" not in info_dict else info_dict["attrs"]
 
@@ -157,13 +159,13 @@ class JobContainer:
     Abstraction containing the selected info of a job container
     """
 
-    def __init__(self, container_metadata, container_soup):
+    def __init__(self, container_metadata: JobContainerMetadata, container_soup: Tag):
 
         self.metadata = container_metadata
         self.title = self.get_title(container_soup)
         self.id = self.get_id(container_soup)
 
-    def get_title(self, soup):
+    def get_title(self, soup: Tag):
         """
         Fetch job title from soup object
         Input: container soup object
@@ -190,7 +192,7 @@ class JobContainer:
 
         return title_processed_string
 
-    def get_id(self, soup):
+    def get_id(self, soup: Tag):
         """
         Fetch id from soup object, if available
         Input: container soup object

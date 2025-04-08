@@ -9,12 +9,15 @@ from collections import defaultdict
 
 import requests
 
+from bs4.element import Tag
 from dotenv import dotenv_values
 
 config = dotenv_values(".env")
 
 
-def find_multiple_tags(soup, tag_name, tag_attrs, children_tag_names_list):
+def find_multiple_tags(
+    soup: Tag, tag_name: str, tag_attrs: dict, children_tag_names_list: list
+):
     """find the all tags given the different attribute possibilities"""
 
     if tag_attrs is None:
@@ -39,7 +42,7 @@ def find_multiple_tags(soup, tag_name, tag_attrs, children_tag_names_list):
     return final_results
 
 
-def find_single_tag(soup, tag_name, tag_attrs):
+def find_single_tag(soup: Tag, tag_name: str, tag_attrs: dict):
     """find the specific tag given the different attribute possibilities"""
 
     if tag_attrs is None:
@@ -51,7 +54,7 @@ def find_single_tag(soup, tag_name, tag_attrs):
     return soup.find(tag_name, {tag_attrs["key"]: tag_attrs["value"]})
 
 
-def read_json_file(filename, create_if_inexistent=False):
+def read_json_file(filename: str, create_if_inexistent: bool = False):
     """read a specific file, or create an empty version of it if it does not exist"""
 
     if create_if_inexistent:
@@ -74,7 +77,7 @@ def read_json_file(filename, create_if_inexistent=False):
     return data_dict
 
 
-def send_email(email_html, email_date):
+def send_email(email_html: str, email_date: str):
     """
     Send an email with some date on the subject and some html
     """
