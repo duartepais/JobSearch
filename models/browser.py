@@ -5,7 +5,7 @@ import nodriver as uc
 from abc import ABC, abstractmethod
 
 
-PAGE_LOADING_TIME = 5  # in seconds
+PAGE_LOADING_TIME = 7  # in seconds
 STARTING_ATTEMPTS_LIMIT = 5
 
 
