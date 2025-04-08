@@ -219,3 +219,6 @@ class SimplePageInteraction(BrowserInteraction):
 
         if not self.html:
             Exception("The HTML was not successfully fetched")
+
+
+# TODO create scrolling to bottom interaction
