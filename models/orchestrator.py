@@ -52,7 +52,7 @@ class Orchestrator:
 
             company.fetch_results()
 
-            self.update_today_data(company.name, company.results_dict, company.errors)
+            self.update_today_data(company.name, company.jobs_dict, company.errors)
 
     def refine(self):
         """
@@ -110,7 +110,7 @@ class Orchestrator:
         """
         update today dict and file with today's job results
         """
-        if len(jobs_dict) > 0:
+        if jobs_dict:
             self.today_dict[company_name]["job_listings"] = jobs_dict
         else:
             if company_name in self.yesterday_dict:
