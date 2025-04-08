@@ -26,14 +26,15 @@ class BrowserInteraction(ABC):
         pass
 
     async def start_driver(self):
-        """Recursive attempt to start browser's driver"""
-        try:
-            self.driver = await uc.start(headless=True, sandbox=False)
-        except (Exception, AttributeError):
-            if self.starting_attempts >= STARTING_ATTEMPTS_LIMIT:
-                raise Exception("Problem while starting the browser")
-            self.starting_attempts += 1
-            await self.start_driver()
+        """Repeatedly attempt to start browser's driver"""
+        while True:
+            try:
+                self.driver = await uc.start(headless=True, sandbox=False)
+                break
+            except (Exception, AttributeError):
+                self.starting_attempts += 1
+                if self.starting_attempts >= STARTING_ATTEMPTS_LIMIT:
+                    raise Exception("Problem while starting the browser")
 
 
 class LoadMoreInteraction(BrowserInteraction):
@@ -189,7 +190,7 @@ class PaginationInteraction(BrowserInteraction):
         return content_select_statement
 
 
-class SimplePageinteraction(BrowserInteraction):
+class SimplePageInteraction(BrowserInteraction):
     """Interaction where results are already all on the same page"""
 
     def __init__(self, url):
@@ -201,6 +202,8 @@ class SimplePageinteraction(BrowserInteraction):
         await self.start_driver()
 
         page = await self.driver.get(self.url)
+
+        await asyncio.sleep(PAGE_LOADING_TIME)
 
         page_source = await page.get_content()
 
