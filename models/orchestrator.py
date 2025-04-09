@@ -15,7 +15,10 @@ from utils import read_json_file, send_email
 config = dotenv_values(".env")
 keyword_list = config["KEYWORDS"].split(",")
 
-env = Environment(loader=FileSystemLoader(config["JINJA_TEMPLATES"]))
+EMAIL_JINJA_TEMPLATE = "email.html.jinja"
+JINJA_TEMPLATES = "templates"
+
+env = Environment(loader=FileSystemLoader(JINJA_TEMPLATES))
 
 
 class Orchestrator:
@@ -149,7 +152,7 @@ class Orchestrator:
         create the email template and send it by email
         """
 
-        email_template = env.get_template(config["EMAIL_JINJA_TEMPLATE"])
+        email_template = env.get_template(EMAIL_JINJA_TEMPLATE)
         email_content = email_template.render(
             jobs_dict=results_dict, errors_dict=errors_dict
         )
