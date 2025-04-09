@@ -2,6 +2,7 @@
 Classes for companies' websites and job listings
 """
 
+import re
 import traceback
 
 from enum import auto, Enum
@@ -84,7 +85,17 @@ class Company:
             for html in html_list:
                 job_containers.extend(self.extract_jobs_from_html(html))
 
-            self.jobs_dict = {job.id: job.title for job in job_containers}
+            ids_set = set([job.id for job in job_containers])
+            refined_ids_set = set([job.refined_id for job in job_containers])
+
+            if len(refined_ids_set) != len(ids_set):
+                self.errors.append(
+                    f"Something wrong with the id refinement of the company {self.name}"
+                )
+
+                self.jobs_dict = {job.id: job.title for job in job_containers}
+            else:
+                self.jobs_dict = {job.refined_id: job.title for job in job_containers}
 
             if not self.jobs_dict:
                 self.errors.append(
@@ -138,7 +149,12 @@ class JobContainerMetadata:
             )
 
         if "id_tag" not in info_dict:
-            self.id_tag, self.id_tag_attrs, self.id_tag_attr_location = None, None, None
+            self.id_tag, self.id_tag_attrs, self.id_tag_attr_location, self.id_regex = (
+                None,
+                None,
+                None,
+                None,
+            )
         else:
 
             self.id_tag = (
@@ -153,6 +169,12 @@ class JobContainerMetadata:
 
             self.id_tag_attr_location = info_dict["id_tag"]["attr_location"]
 
+            self.id_regex = (
+                None
+                if "regex" not in info_dict["id_tag"]
+                else info_dict["id_tag"]["regex"]
+            )
+
 
 class JobContainer:
     """
@@ -164,6 +186,7 @@ class JobContainer:
         self.metadata = container_metadata
         self.title = self.get_title(container_soup)
         self.id = self.get_id(container_soup)
+        self.refined_id = self.refined_id()
 
     def get_title(self, soup: Tag):
         """
@@ -219,9 +242,20 @@ class JobContainer:
 
         return id_string
 
+    def refined_id(self):
+        """
+        Fetch the refined id from the raw id value, if available
+        Output: if available, refined job id, else, raw job id
+        """
+
+        if self.metadata.id_regex:
+            return re.search(self.metadata.id_regex, self.id).group(1)
+        else:
+            return self.id
+
     def to_dict(self):
         """
         Get a representable dict of the job
         """
 
-        return {self.id: self.title}
+        return {self.refined_id: self.title}

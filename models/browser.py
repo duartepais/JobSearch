@@ -221,4 +221,4 @@ class SimplePageInteraction(BrowserInteraction):
             Exception("The HTML was not successfully fetched")
 
 
-# TODO create scrolling to bottom interaction
+# TODO create scrolling to bottom interaction for coherent
