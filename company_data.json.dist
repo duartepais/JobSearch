@@ -87,7 +87,8 @@
                 "key": "key_name",
                 "value": "appropriate_value"
             },
-            "attr_location":"attribute_with_the_id_value"
+            "attr_location":"attribute_with_the_id_value",
+            "regex":"regex_expression"
         }
     }
 }

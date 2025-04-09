@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 import nodriver as uc
 
 
-PAGE_LOADING_TIME = 7  # in seconds
+PAGE_LOADING_TIME = 10  # in seconds
 STARTING_ATTEMPTS_LIMIT = 5
 
 
