@@ -4,8 +4,10 @@ Collection of functions that help the main file and do not fit the model categor
 
 import json
 import os
+import smtplib
 
 from collections import defaultdict
+from email.mime.text import MIMEText
 
 import requests
 
@@ -81,14 +83,16 @@ def send_email(email_html: str, email_date: str):
     """
     Send an email with some date on the subject and some html
     """
-    result = requests.post(
-        f"https://api.mailgun.net/v3/{config['EMAIL_DOMAIN']}/messages",
-        auth=("api", config["API_KEY"]),
-        data={
-            "from": f"Mailgun Sandbox <mailgun@{config['EMAIL_DOMAIN']}>",
-            "to": f"<{config['EMAIL_ADDRESS']}>",
-            "subject": f"New jobs - {email_date}",
-            "html": email_html,
-        },
-        timeout=10,
-    )
+
+    html_message = MIMEText(email_html, "html")
+    html_message["Subject"] = f"New jobs - {email_date}"
+    html_message["From"] = config["FROM_EMAIL_ADDRESS"]
+    html_message["To"] = config["TO_EMAIL_ADDRESS"]
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        server.login(config["FROM_EMAIL_ADDRESS"], config["EMAIL_PASSWORD"])
+        server.sendmail(
+            config["FROM_EMAIL_ADDRESS"],
+            config["TO_EMAIL_ADDRESS"],
+            html_message.as_string(),
+        )
