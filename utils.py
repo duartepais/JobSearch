@@ -9,7 +9,6 @@ import smtplib
 from collections import defaultdict
 from email.mime.text import MIMEText
 
-import requests
 
 from bs4.element import Tag
 from dotenv import dotenv_values
@@ -96,3 +95,14 @@ def send_email(email_html: str, email_date: str):
             config["TO_EMAIL_ADDRESS"],
             html_message.as_string(),
         )
+
+
+def kill_chrome_processes():
+    """
+    Kill all chrome processes
+    """
+
+    os.system("pkill -f chrome")
+    os.system("pkill -f chromedriver")
+    os.system("pkill -f chromium")
+    os.system("pkill -f chromium-browser")

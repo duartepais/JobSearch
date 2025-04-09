@@ -8,6 +8,8 @@ from abc import ABC, abstractmethod
 
 import nodriver as uc
 
+from utils import kill_chrome_processes
+
 
 PAGE_LOADING_TIME = 10  # in seconds
 STARTING_ATTEMPTS_LIMIT = 5
@@ -25,6 +27,7 @@ class BrowserInteraction(ABC):
         """Run the fetching of the html content"""
 
         uc.loop().run_until_complete(self.fetch_html())
+        kill_chrome_processes()
 
     async def start_driver(self):
         """Repeatedly attempt to start browser's driver"""
@@ -100,7 +103,7 @@ class LoadMoreInteraction(BrowserInteraction):
         self.driver.stop()
 
         if not self.html:
-            Exception("The HTML was not successfully fetched")
+            raise Exception("The HTML was not successfully fetched")
 
 
 class PaginationInteraction(BrowserInteraction):
@@ -158,7 +161,7 @@ class PaginationInteraction(BrowserInteraction):
         self.driver.stop()
 
         if not self.html_list:
-            raise Exception("None of pages' HTML could be fetched")
+            raise Exception("None of the pages' HTML could be fetched")
         for html in self.html_list:
             if not html:
                 raise Exception(
@@ -218,7 +221,7 @@ class SimplePageInteraction(BrowserInteraction):
         self.driver.stop()
 
         if not self.html:
-            Exception("The HTML was not successfully fetched")
+            raise Exception("The HTML was not successfully fetched")
 
 
 # TODO create scrolling to bottom interaction for coherent
