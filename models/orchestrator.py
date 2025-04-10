@@ -4,13 +4,14 @@ Class for the orchestrator
 
 import json
 import os
+import time
 
 from datetime import date
 from dotenv import dotenv_values
 from jinja2 import Environment, FileSystemLoader
 
 from models.company import Company
-from utils import read_json_file, send_email
+from utils import read_json_file, send_email, kill_chrome_processes
 
 config = dotenv_values(".env")
 keyword_list = config["KEYWORDS"].split(",")
@@ -156,5 +157,9 @@ class Orchestrator:
         email_content = email_template.render(
             jobs_dict=results_dict, errors_dict=errors_dict
         )
+
+        kill_chrome_processes()
+
+        time.sleep(60)
 
         send_email(email_content, self.today)
