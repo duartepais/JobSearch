@@ -186,7 +186,7 @@ class JobContainer:
         self.metadata = container_metadata
         self.title = self.get_title(container_soup)
         self.id = self.get_id(container_soup)
-        self.refined_id = self.refined_id()
+        self.refined_id = self.get_refined_id()
 
     def get_title(self, soup: Tag):
         """
@@ -242,7 +242,7 @@ class JobContainer:
 
         return id_string
 
-    def refined_id(self):
+    def get_refined_id(self):
         """
         Fetch the refined id from the raw id value, if available
         Output: if available, refined job id, else, raw job id
