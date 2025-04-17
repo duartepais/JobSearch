@@ -208,6 +208,8 @@ class JobContainer:
             title_raw_string.replace("\xa0", " ").splitlines()
         ).strip()
 
+        title_processed_string = " ".join(title_processed_string.split())
+
         if not title_processed_string:
             raise ValueError(
                 "This soup object has an empty text content for the title attribute"
