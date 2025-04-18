@@ -147,9 +147,23 @@ class PaginationInteraction(BrowserInteraction):
             page_source = await page.get_content()
             self.html_list.append(page_source)
 
-            # find the next page button
+            next_page_button = None
+
             button_select_statement = self.get_button_select_statement()
-            next_page_button = await page.query_selector(button_select_statement)
+
+            # find the next page button
+            if "attrs" in self.pagination_dict:
+                next_page_button = await page.query_selector(button_select_statement)
+            else:
+                button_text = self.get_button_text()
+                possible_buttons = await page.query_selector_all(
+                    button_select_statement
+                )
+
+                for possible_button in possible_buttons:
+                    if button_text.strip() in possible_button.text.strip():
+                        next_page_button = possible_button
+                        break
 
             # see if next page button is available
             if next_page_button is None:
@@ -169,19 +183,41 @@ class PaginationInteraction(BrowserInteraction):
                 )
 
     def get_button_select_statement(self):
-        """Create the statement to search for the next page button"""
+        """Create the query select JS statement to search for the next page button"""
 
         if "start_point" in self.pagination_dict:
-            self.current_stage += self.pagination_dict["increment"]
-            attr_value = self.pagination_dict["attrs"]["incomplete_value"].format(
-                page_nr=self.current_stage
-            )
-            statement = f"{self.pagination_dict['tag']}[{self.pagination_dict['attrs']['key']}='{attr_value}']"
+            self.increase_page_number()
+
+            if "attrs" in self.pagination_dict:
+                attr_value = self.pagination_dict["attrs"]["incomplete_value"].format(
+                    page_nr=self.current_stage
+                )
+                statement = f"{self.pagination_dict['tag']}[{self.pagination_dict['attrs']['key']}='{attr_value}']"
+            else:
+                statement = f"{self.pagination_dict['tag']}"
 
         else:
             statement = f"{self.pagination_dict['tag']}[{self.pagination_dict['attrs']['key']}='{self.pagination_dict['attrs']['value']}']"
 
         return statement
+
+    def increase_page_number(self):
+        """Increase the current page number to fetch"""
+
+        self.current_stage += self.pagination_dict["increment"]
+
+    def get_button_text(self):
+        """Get the text content of the next page button"""
+
+        if "start_point" in self.pagination_dict:
+            text = self.pagination_dict["incomplete_text"].format(
+                page_nr=self.current_stage
+            )
+
+        else:
+            text = f"{self.pagination_dict['complete_text']}"
+
+        return text
 
     def get_content_select_statement(self):
         """Create the statement to search for the content of interest"""
