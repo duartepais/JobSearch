@@ -167,7 +167,11 @@ class JobContainerMetadata:
                 else info_dict["id_tag"]["attrs"]
             )
 
-            self.id_tag_attr_location = info_dict["id_tag"]["attr_location"]
+            self.id_tag_attr_location = (
+                None
+                if "attr_location" not in info_dict["id_tag"]
+                else info_dict["id_tag"]["attr_location"]
+            )
 
             self.id_regex = (
                 None
@@ -225,11 +229,14 @@ class JobContainer:
         """
 
         if self.metadata.id_tag:
+
             id_soup = find_single_tag(
                 soup, self.metadata.id_tag, self.metadata.id_tag_attrs
             )
-
-            id_string = id_soup.attrs[self.metadata.id_tag_attr_location].strip()
+            if self.metadata.id_tag_attr_location:
+                id_string = id_soup.attrs[self.metadata.id_tag_attr_location].strip()
+            else:
+                id_string = id_soup.text
 
         elif self.metadata.id_tag_attr_location:
             id_string = soup.attrs[self.metadata.id_tag_attr_location].strip()
