@@ -181,3 +181,4 @@ playground*
 *.json
 .DS_Store
 run_code.sh
+log.txt

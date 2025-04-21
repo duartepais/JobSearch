@@ -84,6 +84,8 @@ def refine():
 
     email_results(all_new_relevant_jobs_dict, potential_errors_dict)
 
+    update_yesterday_data()
+
 
 def update_history_data(jobs_dict: dict):
     """
