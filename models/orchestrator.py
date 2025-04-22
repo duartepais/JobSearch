@@ -10,7 +10,7 @@ from datetime import date
 from dotenv import dotenv_values
 from jinja2 import Environment, FileSystemLoader
 
-from models.company import Company
+from models.company import CompanyScrape
 from utils import read_json_file, send_email, kill_chrome_processes
 
 config = dotenv_values(".env")
@@ -52,7 +52,7 @@ class Orchestrator:
             if company_dict["name"] in self.today_dict:
                 continue
 
-            company = Company(company_dict)
+            company = CompanyScrape(company_dict)
 
             company.fetch_results()
 

@@ -5,6 +5,7 @@ Classes for companies' websites and job listings
 import re
 import traceback
 
+from abc import ABC, abstractmethod
 from enum import auto, Enum
 
 from bs4 import BeautifulSoup
@@ -32,7 +33,7 @@ class ResultsLoading(Enum):
     SIMPLE_SAME_PAGE = auto()
 
 
-class Company:
+class CompanyScrape:
     """
     Abstraction for the company website and its scraping
     """
@@ -119,7 +120,7 @@ class Company:
         for job_soup in job_container_soups:
             try:
                 job_containers.append(
-                    JobContainer(self.job_container_metadata, job_soup)
+                    HTMLJobContainer(self.job_container_metadata, job_soup)
                 )
             except (ValueError, AttributeError):
                 continue
@@ -180,9 +181,9 @@ class JobContainerMetadata:
             )
 
 
-class JobContainer:
+class HTMLJobContainer:
     """
-    Abstraction containing the selected info of a job container
+    Abstraction containing the selected info of an html job container
     """
 
     def __init__(self, container_metadata: JobContainerMetadata, container_soup: Tag):

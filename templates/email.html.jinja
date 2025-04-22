@@ -3,7 +3,7 @@
     <body>
         <h1>New jobs</h1>
 
-        {% if jobs_dict|length == 0%}
+        {% if jobs_dict|length == 0 %}
             <p> There are no new jobs. Maybe check if there are any errors. </p>
         {% else %}
             {% for company_name, company_dict in jobs_dict.items() %}
@@ -16,7 +16,7 @@
             {% endfor %}
         {% endif %}
 
-        {% if errors_dict|length > 0%}
+        {% if errors_dict|length > 0 %}
             <h3>Errors</h3>
             <p> Check if there are any errors in the following companies </p>
             <ul>

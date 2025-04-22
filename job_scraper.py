@@ -4,7 +4,7 @@ import argparse
 import json
 
 from dotenv import dotenv_values
-from models.company import Company
+from models.company import CompanyScrape
 from utils import kill_chrome_processes, read_json_file
 
 
@@ -56,7 +56,7 @@ def main():
 
     args = parser.parse_args()
 
-    company = Company(args.company_dict)
+    company = CompanyScrape(args.company_dict)
 
     company.fetch_results()
 
