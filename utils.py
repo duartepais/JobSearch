@@ -72,8 +72,13 @@ def read_json_file(filename: str, create_if_inexistent: bool = False):
                 pass
             data_dict = defaultdict(dict)
     else:
+        file_size = os.path.getsize(filename)
+
         with open(filename, "r", encoding="utf-8") as read_file:
-            data_dict = json.load(read_file)
+            if file_size == 0:
+                data_dict = defaultdict(dict)
+            else:
+                data_dict = json.load(read_file)
 
     return data_dict
 
@@ -106,3 +111,36 @@ def kill_chrome_processes():
     os.system("pkill -f chromedriver")
     os.system("pkill -f chromium")
     os.system("pkill -f chromium-browser")
+
+
+def get_by_path(d: dict, path: str):
+    """
+    Given a nested dict d, return the value in a specific path
+    """
+    keys = path.split(".")
+    for key in keys:
+        if isinstance(d, dict):
+            d = d.get(key)
+        else:
+            return None
+    return d
+
+
+def clean_string(input_string: str) -> str:
+    """
+    Given an input string, return it without leading, trailing and double spaces and breaklines
+    """
+
+    output_string = " ".join(input_string.replace("\xa0", " ").splitlines()).strip()
+
+    output_string = " ".join(output_string.split())
+
+    return output_string.strip()
+
+
+def clean_api_response(response: str) -> str:
+    """
+    Given an API response, return it without the byte order mark (BOM)
+    """
+
+    return response.text.replace("\ufeff", "")
