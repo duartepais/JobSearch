@@ -160,13 +160,21 @@ class CompanyAPI(CompanyData):
 
         if isinstance(self.api_interaction, IterativeAPIInteraction):
 
-            job_nr_old = len(job_containers)
+            job_containers_set = set()
+            job_nr_old = len(job_containers_set)
 
             while True:
                 response = self.api_interaction.fetch_response()
                 job_containers.extend(self.extract_jobs(response))
 
-                job_nr_new = len(job_containers)
+                job_containers_set.update(
+                    [
+                        job.refined_id if hasattr(job, "refined_id") else job.job_id
+                        for job in job_containers
+                    ]
+                )
+
+                job_nr_new = len(job_containers_set)
 
                 if job_nr_new == job_nr_old:
                     break
