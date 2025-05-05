@@ -117,6 +117,10 @@ def get_by_path(d: dict, path: str):
     """
     Given a nested dict d, return the value in a specific path
     """
+
+    if isinstance(d, list):
+        return d
+
     keys = path.split(".")
     for key in keys:
         if isinstance(d, dict):
