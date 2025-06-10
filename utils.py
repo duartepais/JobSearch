@@ -125,6 +125,8 @@ def get_by_path(d: dict, path: str):
     for key in keys:
         if isinstance(d, dict):
             d = d.get(key)
+        elif not key:
+            d = d[0]
         else:
             return None
     return d
