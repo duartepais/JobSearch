@@ -50,7 +50,9 @@ def find_single_tag(soup: Tag, tag_name: str, tag_attrs: dict):
         return soup.find(tag_name)
 
     if "value" not in tag_attrs:
-        return soup.find(tag_name, {tag_attrs["key"]: True})
+        return soup.find(
+            lambda tag: tag.name == tag_name and tag.has_attr(tag_attrs["key"])
+        )
 
     return soup.find(tag_name, {tag_attrs["key"]: tag_attrs["value"]})
 
