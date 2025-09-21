@@ -103,13 +103,14 @@ class CompanyData(ABC):
 
         jobs_list = get_by_path(json_dict, self.job_container_metadata.jobs_path)
 
-        for job_dict in jobs_list:
-            potential_container = JSONJobContainer(
-                self.job_container_metadata, job_dict
-            )
-            if potential_container.has_valid_country():
+        if isinstance(jobs_list, list):
+            for job_dict in jobs_list:
+                potential_container = JSONJobContainer(
+                    self.job_container_metadata, job_dict
+                )
+                if potential_container.has_valid_country():
 
-                job_containers.append(potential_container)
+                    job_containers.append(potential_container)
 
         return job_containers
 
