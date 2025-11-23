@@ -134,6 +134,28 @@ def get_by_path(d: dict, path: str):
     return d
 
 
+def format_by_path(d: dict, path: str, format_value: str, new_value: str):
+    """
+    Given a nested dict d, format a string in a given path.
+    This exploits the immutability of dicts
+    """
+
+    if isinstance(d, str):
+        return d.format(**{format_value: new_value})
+
+    keys = path.split(".")
+    buffer_dict = d
+    for key in keys[:-1]:
+        buffer_dict = buffer_dict[key]
+
+    if isinstance(buffer_dict[keys[-1]], str):
+        buffer_dict[keys[-1]] = buffer_dict[keys[-1]].format(
+            **{format_value: new_value}
+        )
+
+    return d
+
+
 def clean_string(input_string: str) -> str:
     """
     Given an input string, return it without leading, trailing and double spaces and breaklines
