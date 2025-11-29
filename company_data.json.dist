@@ -1,6 +1,7 @@
 {
     "name": "company name",
     "base_url": "company_url_with_appropriate_page_nr",
+    "type": "type of interaction"
     "next_page": {     // optional
         "tag":"tag name",     // optional
         "attrs":{     // optional
@@ -39,6 +40,7 @@
 {
     "name": "company_name",
     "base_url": "company_url_with_appropriate_page_nr",
+    "type": "interaction type",
     "next_page": {
         "tag":"tag_name",
         "attrs":{
