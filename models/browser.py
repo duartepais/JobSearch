@@ -260,4 +260,44 @@ class SimplePageInteraction(BrowserInteraction):
             raise Exception("The HTML was not successfully fetched")
 
 
+class ScrollingInteraction(BrowserInteraction):
+    """Interaction where results are all in a single page but are loaded upon scrolling action"""
+
+    def __init__(self, url: str, content_tag_dict: dict):
+        super().__init__(url)
+        self.html = None
+        self.content_tag_dict = content_tag_dict
+
+    async def fetch_html(self):
+        """Fetch the html content of the page"""
+
+        await self.start_driver()
+        page = await self.driver.get(self.url)
+
+        nr_content_tags_old = 0
+
+        while True:
+
+            await asyncio.sleep(PAGE_LOADING_TIME)
+
+            nr_content_tags_new = len(
+                await page.query_selector_all(self.content_tag_dict["tag"])
+            )
+
+            if nr_content_tags_new == nr_content_tags_old:
+                break
+
+            await page.scroll_down(amount=1000)
+            nr_content_tags_old = nr_content_tags_new
+
+        page_source = await page.get_content()
+        self.html = page_source
+
+        await page.close()
+        self.driver.stop()
+
+        if not self.html:
+            raise Exception("The HTML was not successfully fetched")
+
+
 # TODO create scrolling to bottom interaction for coherent

@@ -19,6 +19,7 @@ from models.browser import (
     SimplePageInteraction,
     LoadMoreInteraction,
     PaginationInteraction,
+    ScrollingInteraction,
 )
 from utils import find_multiple_tags, find_single_tag, get_by_path, clean_string
 
@@ -30,9 +31,10 @@ class ResultsLoading(Enum):
     Enumeration for the different kinds of results loading
     """
 
-    PAGINATION = auto()
-    LOAD_MORE_SAME_PAGE = auto()
-    SIMPLE_SAME_PAGE = auto()
+    PAGINATION = "pagination"
+    LOAD_MORE_SAME_PAGE = "load more"
+    SIMPLE_SAME_PAGE = "single page"
+    SCROLLING = "scroll"
 
 
 class APIResponseFormat(Enum):
@@ -228,24 +230,23 @@ class CompanyScrape(CompanyData):
         metadata = HTMLJobContainerMetadata(company_dict["job_container"])
         super().__init__(company_dict, metadata)
 
-        self.results_loading = self.get_results_loading_type(company_dict)
+        self.results_loading = ResultsLoading(company_dict["type"])
 
-    def get_results_loading_type(self, company_dict: dict) -> ResultsLoading:
-        """Assess which kind of results loading this website has"""
-
-        if "next_page" in company_dict:
-            self.browser_interaction = PaginationInteraction(
-                self.url, company_dict["next_page"], company_dict["job_container"]
-            )
-            return ResultsLoading.PAGINATION
-        elif "load_more" in company_dict:
-            self.browser_interaction = LoadMoreInteraction(
-                self.url, company_dict["load_more"], company_dict["job_container"]
-            )
-            return ResultsLoading.LOAD_MORE_SAME_PAGE
-        else:
-            self.browser_interaction = SimplePageInteraction(self.url)
-            return ResultsLoading.SIMPLE_SAME_PAGE
+        match self.results_loading:
+            case ResultsLoading.PAGINATION:
+                self.browser_interaction = PaginationInteraction(
+                    self.url, company_dict["next_page"], company_dict["job_container"]
+                )
+            case ResultsLoading.LOAD_MORE_SAME_PAGE:
+                self.browser_interaction = LoadMoreInteraction(
+                    self.url, company_dict["load_more"], company_dict["job_container"]
+                )
+            case ResultsLoading.SCROLLING:
+                self.browser_interaction = ScrollingInteraction(
+                    self.url, company_dict["job_container"]
+                )
+            case ResultsLoading.SIMPLE_SAME_PAGE:
+                self.browser_interaction = SimplePageInteraction(self.url)
 
     def scrape_results(self):
         """Get all the job results available in a company's website"""
@@ -259,7 +260,9 @@ class CompanyScrape(CompanyData):
                 case ResultsLoading.PAGINATION:
                     html_list = self.browser_interaction.html_list
                 case (
-                    ResultsLoading.LOAD_MORE_SAME_PAGE | ResultsLoading.SIMPLE_SAME_PAGE
+                    ResultsLoading.LOAD_MORE_SAME_PAGE
+                    | ResultsLoading.SIMPLE_SAME_PAGE
+                    | ResultsLoading.SCROLLING
                 ):
                     html_list = [self.browser_interaction.html]
 
