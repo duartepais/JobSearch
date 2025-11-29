@@ -71,6 +71,7 @@ def refine():
             job_key: job_title
             for job_key, job_title in new_jobs_dict.items()
             if any(keyword in job_title.lower() for keyword in keyword_list)
+            and job_title is not None
         }
 
         #
